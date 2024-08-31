@@ -32,7 +32,11 @@ module eos_helmholtz
  public :: eos_helmholtz_get_mintemp
  public :: eos_helmholtz_get_maxtemp
  public :: eos_helmholtz_eosinfo
+ public :: eos_helmholtz_set_relaxflag
+ public :: eos_helmholtz_relaxation
 
+
+ integer, public :: relaxflag = 1
 
 
  private
@@ -359,6 +363,8 @@ real function eos_helmholtz_get_maxtemp()
 end function eos_helmholtz_get_maxtemp
 
 
+
+
 !----------------------------------------------------------------
 !+
 !  print eos information
@@ -377,6 +383,63 @@ subroutine eos_helmholtz_eosinfo(iprint)
  enddo
 
 end subroutine eos_helmholtz_eosinfo
+
+
+
+
+
+
+
+!----------------------------------------------------------------
+!+
+!  set the relaxflag based on input file read
+!
+!  called by eos_read_inopt in eos.F90
+!+
+!----------------------------------------------------------------
+subroutine eos_helmholtz_set_relaxflag(tmp)
+ use io, only:fatal
+ integer, intent(in) :: tmp
+ character(len=30), parameter  :: label = 'read_options_eos_helmholtz'
+
+ relaxflag = tmp
+
+ if (relaxflag /= 0 .and. relaxflag /= 1) call fatal(label, 'relax flag incorrect, try using 0 (evolve) or 1 (relaxation)')
+
+end subroutine eos_helmholtz_set_relaxflag
+
+
+!-----------------------------------------------------------------------
+!+
+!  new function that does the work of the previous relaxflag
+!+
+!-----------------------------------------------------------------------
+
+
+subroutine eos_helmholtz_relaxation(tempi,cgsrhoi,cgseni_eos)
+ use units,         only:unit_density,unit_pressure,unit_ergg,unit_velocity
+ real,    intent(inout) :: tempi,cgseni_eos
+ real,    intent(in) :: cgsrhoi
+ real :: cgspresi, cgsspsoundi, cgsdendti
+
+
+ print *, tempi
+ print *, cgsrhoi
+ print *, cgseni_eos
+ call eos_helmholtz_compute_pres_sound(tempi, cgsrhoi, cgspresi, cgsspsoundi, cgseni_eos, cgsdendti)
+ print *, tempi
+ print *, cgsrhoi
+ print *, cgseni_eos
+
+
+ ! relaxation:
+ ! constant temperature, set internal energy of particles to result from eos
+ !if (relaxflag == 1) then
+ !   cgseni_eos = cgseni_eos / unit_ergg
+ !endif
+
+
+end subroutine eos_helmholtz_relaxation
 
 
 !----------------------------------------------------------------
@@ -405,8 +468,14 @@ subroutine eos_helmholtz_pres_sound(tempi,rhoi,ponrhoi,spsoundi,eni)
 
  cgsrhoi = rhoi * unit_density
 
+ print *, tempi
+ print *, cgsrhoi
+ print *, cgseni_eos
  call eos_helmholtz_compute_pres_sound(tempi, cgsrhoi, cgspresi, cgsspsoundi, cgseni_eos, cgsdendti)
 
+ print *, tempi
+ print *, cgsrhoi
+ print *, cgseni_eos
 
 ! dynamical evolution:
 ! ue is evolved in time, iterate eos to solve for temperature when eos ue converges with particle ue

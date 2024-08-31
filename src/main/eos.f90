@@ -64,6 +64,9 @@ module eos
  public  :: init_eos,finish_eos,write_options_eos,read_options_eos
  public  :: write_headeropts_eos, read_headeropts_eos
 
+
+
+
  private
 
  integer, public :: ieos          = 1
@@ -444,6 +447,7 @@ subroutine equationofstate(eos_type,ponrhoi,spsoundi,rhoi,xi,yi,zi,tempi,eni,gam
  end select
 
 end subroutine equationofstate
+
 
 !-----------------------------------------------------------------------
 !+
@@ -844,6 +848,7 @@ subroutine calc_temp_and_ene(eos_type,rho,pres,ene,temp,ierr,guesseint,mu_local,
  use eos_idealplusrad, only:get_idealgasplusrad_tempfrompres,get_idealplusrad_enfromtemp
  use eos_mesa,         only:get_eos_eT_from_rhop_mesa
  use eos_gasradrec,    only:calc_uT_from_rhoP_gasradrec
+ use eos_helmholtz,    only:eos_helmholtz_relaxation
  integer, intent(in)              :: eos_type
  real,    intent(in)              :: rho,pres
  real,    intent(inout)           :: ene,temp
@@ -871,6 +876,22 @@ subroutine calc_temp_and_ene(eos_type,rho,pres,ene,temp,ierr,guesseint,mu_local,
  case(20) ! Ideal gas + radiation + recombination (from HORMONE, Hirai et al., 2020)
     call calc_uT_from_rhoP_gasradrec(rho,pres,X,1.-X-Z,temp,ene,mu,ierr)
     if (present(mu_local)) mu_local = mu
+
+ !case(15) ! Helmholtz EoS
+ !   xi    = xyzh(1,iopt)
+ !   yi    = xyzh(2,iopt)
+ !   zi    = xyzh(3,iopt)
+ !   tempi = initialtempopt
+ !   !call equationofstate(ieos,p_on_rhogas,spsoundi,densi,xi,yi,zi,tempi,ene)
+ !   call eos_helmholtz_relaxation(ieos,p_on_rhogas,spsoundi,densi,xi,yi,zi,tempi,ene)
+ !   vxyzu(4,iopt) = ene
+ !   eos_vars(itempopt,iopt) = initialtempopt
+ case(15) ! Helmholtz EoS
+    print *, temp
+    print *, ene
+    call eos_helmholtz_relaxation(temp,rho,ene)
+    print *, temp
+    print *, ene
  case default
     ierr = 1
  end select
@@ -1491,12 +1512,14 @@ subroutine read_options_eos(name,valstring,imatch,igotall,ierr)
  use eos_barotropic, only:read_options_eos_barotropic
  use eos_piecewise,  only:read_options_eos_piecewise
  use eos_gasradrec,  only:read_options_eos_gasradrec
+ use eos_helmholtz,  only:eos_helmholtz_set_relaxflag
  character(len=*), intent(in)  :: name,valstring
  logical,          intent(out) :: imatch,igotall
  integer,          intent(out) :: ierr
  integer,          save        :: ngot  = 0
  character(len=30), parameter  :: label = 'read_options_eos'
  logical :: igotall_barotropic,igotall_piecewise,igotall_gasradrec
+ integer :: tmp
 
  imatch  = .true.
  igotall_barotropic = .true.
@@ -1523,6 +1546,12 @@ subroutine read_options_eos(name,valstring,imatch,igotall,ierr)
  case('Z')
     read(valstring,*,iostat=ierr) Z_in
     if (Z_in <= 0. .or. Z_in > 1.) call fatal(label,'Z must be between 0 and 1')
+    ngot = ngot + 1
+ case('relaxflag')
+    ! ideally would like this to be self-contained within eos_helmholtz,
+    ! but it's a bit of a pain and this is easy
+    read(valstring,*,iostat=ierr) tmp
+    call eos_helmholtz_set_relaxflag(tmp)
     ngot = ngot + 1
  case default
     imatch = .false.
