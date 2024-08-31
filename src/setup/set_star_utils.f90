@@ -381,7 +381,7 @@ end subroutine set_star_composition
 subroutine set_star_thermalenergy(ieos,den,pres,r,npts,npart,xyzh,vxyzu,rad,eos_vars,&
                                   relaxed,use_var_comp,initialtemp,npin)
  use part,            only:do_radiation,rhoh,massoftype,igas,itemp,igasP,iX,iZ,imu,iradxi
- use eos,             only:equationofstate,calc_temp_and_ene,gamma,gmw
+ use eos,             only:calc_temp_and_ene,gamma,gmw
  use radiation_utils, only:ugas_from_Tgas,radE_from_Trad
  use table_utils,     only:yinterp
  use units,           only:unit_density,unit_ergg,unit_pressure
@@ -421,14 +421,6 @@ subroutine set_star_thermalenergy(ieos,den,pres,r,npts,npart,xyzh,vxyzu,rad,eos_
     select case(ieos)
     case(16) ! Shen EoS
        vxyzu(4,i) = initialtemp
-    case(15) ! Helmholtz EoS
-       xi    = xyzh(1,i)
-       yi    = xyzh(2,i)
-       zi    = xyzh(3,i)
-       tempi = initialtemp
-       call equationofstate(ieos,p_on_rhogas,spsoundi,densi,xi,yi,zi,tempi,eni)
-       vxyzu(4,i) = eni
-       eos_vars(itemp,i) = initialtemp
     case default ! Recalculate eint and temp for each particle according to EoS
        rho_cgs = densi*unit_density
        p_cgs = presi*unit_pressure

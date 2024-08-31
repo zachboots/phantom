@@ -160,7 +160,9 @@ subroutine relax_star(nt,rho,pr,r,npart,xyzh,use_var_comp,Xfrac,Yfrac,mu,ierr,np
  !
  t = 0.
  call allocate_memory(int(min(2*npart,maxp),kind=8))
+ print *, "1"
  call get_derivs_global()
+ print *, "2"
  call reset_u_and_get_errors(i1,npart,xyzh,vxyzu,rad,nt,mr,rho,&
                              utherm,entrop,fix_entrop,rmax,rmserr)
  call compute_energies(t)
@@ -415,6 +417,9 @@ subroutine set_options_for_relaxation(tdyn)
  ! turn on settings appropriate to relaxation
  !
  if (maxvxyzu >= 4) ieos = 2
+
+ if (ieos_prev == 15) ieos = 15
+
  if (tdyn > 0.) then
     idamp = 2
     tdyn_s = tdyn*utime
