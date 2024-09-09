@@ -419,6 +419,14 @@ subroutine set_star_thermalenergy(ieos,den,pres,r,npts,npart,xyzh,vxyzu,rad,eos_
     endif
 
     select case(ieos)
+    case(15) ! Helmholtz EpS
+       eos_vars(itemp,i) = initialtemp
+       rho_cgs = densi*unit_density
+       p_cgs = presi*unit_pressure
+       tempi = initialtemp
+       call calc_temp_and_ene(eos_type,rho_cgs,p_cgs,eni,tempi,ierr)
+       vxyzu(4,i) = eni / unit_ergg
+
     case(16) ! Shen EoS
        vxyzu(4,i) = initialtemp
     case default ! Recalculate eint and temp for each particle according to EoS

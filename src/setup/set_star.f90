@@ -231,6 +231,14 @@ subroutine set_star(id,master,star,xyzh,vxyzu,eos_vars,rad,&
  ! excluded from the centre of mass and relax_star calculations
  !
  if (npart_old > 0) xyzh(4,1:npart_old) = -abs(xyzh(4,1:npart_old))
+
+ !
+ ! set the internal energy and temperature
+ !
+ if (maxvxyzu==4) call set_star_thermalenergy(ieos,den,pres,r,npts,npart,&
+                       xyzh,vxyzu,rad,eos_vars,relax,use_var_comp,star%initialtemp,&
+                       npin=npart_old)
+
  !
  ! relax the density profile to achieve nice hydrostatic equilibrium
  !
