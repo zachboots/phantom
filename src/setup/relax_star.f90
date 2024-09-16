@@ -194,7 +194,8 @@ subroutine relax_star(nt,rho,pr,r,npart,xyzh,use_var_comp,Xfrac,Yfrac,mu,ierr,np
     call init_step(npart,t,dtmax)
  endif
  nits = 0
- do while (.not. converged .and. nits < maxits)
+ do while (.false.)
+ !do while (.not. converged .and. nits < maxits)
     nits = nits + 1
     !
     ! shift particles by one "timestep"
