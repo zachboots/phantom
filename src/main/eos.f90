@@ -887,11 +887,11 @@ subroutine calc_temp_and_ene(eos_type,rho,pres,ene,temp,ierr,guesseint,mu_local,
  !   vxyzu(4,iopt) = ene
  !   eos_vars(itempopt,iopt) = initialtempopt
  case(15) ! Helmholtz EoS
-    print *, temp
-    print *, ene
+    !print *, temp
+    !print *, ene
     call eos_helmholtz_relaxation(temp,rho,ene)
-    print *, temp
-    print *, ene
+    !print *, temp
+    !print *, ene
  case default
     ierr = 1
  end select
