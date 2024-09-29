@@ -84,6 +84,7 @@ module readwrite_infile
  use part,      only:hfact,ien_type
  use io,        only:iverbose
  use dim,       only:do_radiation,nucleation,use_dust,use_dustgrowth,mhd_nonideal
+ use eos_helmholtz, only:relaxflag
  implicit none
  logical :: incl_runtime2 = .false.
 
@@ -163,6 +164,7 @@ subroutine write_infile(infile,logfile,evfile,dumpfile,iwritein,iprint)
  call write_inopt(real(twallmax),'twallmax','maximum wall time (hhh:mm, 000:00=ignore)',iwritein,time=.true.)
  call write_inopt(real(dtwallmax),'dtwallmax','maximum wall time between dumps (hhh:mm, 000:00=ignore)',iwritein,time=.true.)
  call write_inopt(nfulldump,'nfulldump','full dump every n dumps',iwritein)
+ call write_inopt(relaxflag,'relaxflag','set 1 to relax star, 0 if not',iwritein)
  call write_inopt(iverbose,'iverbose','verboseness of log (-1=quiet 0=default 1=allsteps 2=debug 5=max)',iwritein)
 
  if (incl_runtime2 .or. rhofinal_cgs > 0.0 .or. dtmax_dratio > 1.0 .or. calc_erot) then
@@ -473,6 +475,8 @@ subroutine read_infile(infile,logfile,evfile,dumpfile)
        read(valstring,*,iostat=ierr) rkill
     case('nfulldump')
        read(valstring,*,iostat=ierr) nfulldump
+    case('relaxflag')
+       read(valstring,*,iostat=ierr) relaxflag
     case('alpha')
        read(valstring,*,iostat=ierr) alpha
     case('alphamax')
@@ -665,6 +669,7 @@ subroutine read_infile(infile,logfile,evfile,dumpfile)
     if (ptol > 1.e-1) call warn(label,'dangerously large tolerance on pmom iterations')
     if (nfulldump==0 .or. nfulldump > 10000) call fatal(label,'nfulldump = 0')
     if (nfulldump >= 50) call warn(label,'no full dumps for a long time...',1)
+    if (relaxflag < 0 .or. relaxflag > 1) call fatal(label,'relaxflag should be 0 or 1')
     if (twallmax < 0.)  call fatal(label,'invalid twallmax (use 000:00 to ignore)')
     if (dtwallmax < 0.) call fatal(label,'invalid dtwallmax (use 000:00 to ignore)')
     if (hfact < 1. .or. hfact > 5.) &

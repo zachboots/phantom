@@ -17,8 +17,10 @@ module eos_helmholtz
 !
 ! :Runtime parameters: None
 !
-! :Dependencies: datafiles, io, physcon, units
+! :Dependencies: datafiles, io, options, physcon, units
 !
+
+
  implicit none
 
 ! subroutines to read/initialise tables, and get pressure/sound speed
@@ -37,6 +39,8 @@ module eos_helmholtz
 
 
  integer, public :: relaxflag = 1
+
+
 
 
  private
@@ -399,6 +403,7 @@ end subroutine eos_helmholtz_eosinfo
 !----------------------------------------------------------------
 subroutine eos_helmholtz_set_relaxflag(tmp)
  use io, only:fatal
+ !use options, only:relaxflag
  integer, intent(in) :: tmp
  character(len=30), parameter  :: label = 'read_options_eos_helmholtz'
 
@@ -447,6 +452,7 @@ end subroutine eos_helmholtz_relaxation
 subroutine eos_helmholtz_pres_sound(tempi,rhoi,ponrhoi,spsoundi,eni)
  use units,   only:unit_density,unit_pressure,unit_ergg,unit_velocity
  use io,      only:warning
+ !use options, only:relaxflag
  real, intent(inout) :: tempi
  real, intent(in)    :: rhoi
  real, intent(out)   :: ponrhoi
